@@ -1,0 +1,35 @@
+# wrangler.toml
+# Cloudflare Pages + D1 + R2 + Cron Worker
+#
+# PENTING: File ini untuk Cloudflare Workers (cron).
+# Cloudflare Pages punya konfigurasi binding TERPISAH lewat Dashboard.
+# Lihat README.md bagian "Konfigurasi Binding Pages" untuk detail.
+
+name                   = "wedding-booth-cron"   # nama Worker cron (bukan Pages)
+main                   = "worker-cron.js"        # entry point Worker cron
+compatibility_date     = "2024-09-23"
+
+# ── Cron Trigger ──────────────────────────────────────────
+# Jalankan sync ke Google Drive setiap 5 menit
+[triggers]
+crons = ["*/5 * * * *"]
+
+# ── D1 Database ───────────────────────────────────────────
+[[d1_databases]]
+binding       = "DB"
+database_name = "wedding-booth-db"
+database_id   = "GANTI_DENGAN_ID_D1_KAMU"   # dari: wrangler d1 create wedding-booth-db
+
+# ── R2 Bucket ─────────────────────────────────────────────
+[[r2_buckets]]
+binding     = "MEDIA_BUCKET"
+bucket_name = "wedding-booth-media"
+
+# ── Environment Variables ──────────────────────────────────
+# Secret (set via CLI, JANGAN tulis di sini):
+#   npx wrangler secret put GOOGLE_SERVICE_ACCOUNT_EMAIL
+#   npx wrangler secret put GOOGLE_PRIVATE_KEY
+#   npx wrangler secret put GOOGLE_DRIVE_FOLDER_ID
+[vars]
+MAX_ARCHIVE_ATTEMPTS = "5"     # maks retry per file sebelum menyerah
+ARCHIVE_BATCH_SIZE   = "10"    # jumlah file diproses per cron run
